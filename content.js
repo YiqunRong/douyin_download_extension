@@ -89,7 +89,7 @@ const addDownloadDiv = () => {
   const sideElement =
     targetDiv?.querySelector(
       ".immersive-player-switch-on-hide-interaction-area"
-    ) || targetDiv.querySelector("xg-controls")?.nextSibling?.firstChild;
+    ) || targetDiv?.querySelector("xg-controls")?.nextSibling?.firstChild;
   sideElement?.prepend(div);
 };
 
