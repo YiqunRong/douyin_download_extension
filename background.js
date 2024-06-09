@@ -29,14 +29,17 @@ function sanitizeFilename(filename) {
 chrome.webRequest.onBeforeRequest.addListener(
   (details) => {
     const link = details.url;
-    if (link.includes("douyinvod") && linkList.at(-1) !== link) {
+    if (
+      (link.includes("douyinvod") || link.includes("zjcdn")) &&
+      linkList.at(-1) !== link
+    ) {
       if (linkList.length > 50) {
         linkList.shift();
       }
       linkList.push(link);
     }
   },
-  { urls: ["https://*.douyinvod.com/*"] }
+  { urls: ["https://*.douyinvod.com/*", "https://*.zjcdn.com/*"] }
 );
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
