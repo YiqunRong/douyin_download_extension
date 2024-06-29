@@ -1,17 +1,30 @@
 const loadingdIconLink = chrome.runtime.getURL("assets/images/loading.png");
 const downloadIconLink = chrome.runtime.getURL("assets/images/download.png");
 const failedIconLink = chrome.runtime.getURL("assets/images/failed.png");
+const NEED_UI_DOWNLOAD = "NEED_UI_DOWNLOAD";
+const DOWNLOADED = "DOWNLOADED";
+const LINK_NOT_FOUND = "LINK_NOT_FOUND";
+const DOWNLOAD_FAILED = "DOWNLOAD_FAILED";
 
-async function sendMessageAsync(message) {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(message, function (response) {
-      if (chrome.runtime.lastError) {
-        reject(new Error(chrome.runtime.lastError.message));
-      } else {
-        resolve(response);
-      }
-    });
+async function fetchVideoAndDownload(url, filename) {
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Referer': "https://www.douyin.com" 
+    }
   });
+  if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 const sendDownloadMesssage = (targetDivDom, targetImageDom) => {
@@ -46,13 +59,16 @@ const sendDownloadMesssage = (targetDivDom, targetImageDom) => {
     return;
   }
 
-  chrome.runtime.sendMessage(payload, function (response) {
+  chrome.runtime.sendMessage(payload, async function (response) {
     if (chrome.runtime.lastError) {
       console.log(chrome.runtime.lastError.message);
     } else {
-      if (response.status === "ok") {
+      if (response.status === DOWNLOADED) {
         targetImageDom && (targetImageDom.src = downloadIconLink);
-      } else {
+      } else if (response.status === NEED_UI_DOWNLOAD) { 
+        await fetchVideoAndDownload(response.url, payload.fileName);
+        targetImageDom && (targetImageDom.src = downloadIconLink);
+      }else {
         targetImageDom && (targetImageDom.src = failedIconLink);
       }
     }

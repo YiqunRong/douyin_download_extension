@@ -9,7 +9,7 @@
       "js": ["content.js"]
     }
   ],
-  "permissions": ["activeTab", "webRequest", "downloads"],
+  "permissions": ["activeTab", "webRequest", "downloads", "declarativeNetRequest", "declarativeNetRequestFeedback"],
   "host_permissions": [
     "https://*.douyin.com/*",
     "https://*.douyinvod.com/*",
@@ -30,5 +30,12 @@
       "48": "assets/images/icon.png",
       "128": "assets/images/icon.png"
     }
+  },
+  "declarative_net_request": {
+    "rule_resources": [{
+        "id": "1",
+        "enabled": true,
+        "path": "rules.json"
+    }]
   }
 }

@@ -1,12 +1,32 @@
 let linkList = [];
+const referer = 'https://www.douyin.com';
+const urlsNeedReferer = ["douyinvod.com"];
+const NEED_UI_DOWNLOAD = "NEED_UI_DOWNLOAD";
+const DOWNLOADED = "DOWNLOADED";
+const LINK_NOT_FOUND = "LINK_NOT_FOUND";
+const DOWNLOAD_FAILED = "DOWNLOAD_FAILED";
 
-function downloadFile(url, filename) {
+async function fetchVideo(url) {
+  const response = await fetch(url, {
+      method: 'GET'
+  });
+  if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response.blob(); // Convert the response to a blob
+}
+
+async function downloadFile(url, filename) {
+  if (urlsNeedReferer.some( urlNeedReferer => url.includes(urlNeedReferer))) { 
+    return Promise.resolve({ status: NEED_UI_DOWNLOAD, url });
+  }  
   return new Promise((resolve, reject) => {
     chrome.downloads.download({ url, filename }, () => {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError.message);
       } else {
-        resolve();
+        resolve({ status: DOWNLOADED });
       }
     });
   });
@@ -47,16 +67,21 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     const videoLink =
       request.videoLink ??
       linkList.find((link) => link.includes(request.videoId));
+    
+    if (!videoLink) { 
+      sendResponse({ status: LINK_NOT_FOUND });
+      return true;
+    }
 
     const fileName = sanitizeFilename(request.fileName);
 
     downloadFile(videoLink, fileName)
-      .then(() => {
-        sendResponse({ status: "ok" });
+      .then((response) => {
+        sendResponse(response)
       })
       .catch((error) => {
         console.log("download error", error);
-        sendResponse({ status: "failed" });
+        sendResponse({ status: DOWNLOAD_FAILED });
       });
 
     // Return true to keep the message channel open
