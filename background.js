@@ -1,26 +1,22 @@
-let linkList = [];
-const referer = 'https://www.douyin.com';
-const urlsNeedReferer = ["douyinvod.com"];
 const NEED_UI_DOWNLOAD = "NEED_UI_DOWNLOAD";
 const DOWNLOADED = "DOWNLOADED";
 const LINK_NOT_FOUND = "LINK_NOT_FOUND";
 const DOWNLOAD_FAILED = "DOWNLOAD_FAILED";
 
-async function fetchVideo(url) {
+const linkList = [];
+
+async function canFetchVideo(url) {
   const response = await fetch(url, {
       method: 'GET'
   });
-  if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  return response.blob(); // Convert the response to a blob
+  return !!response.ok
 }
 
 async function downloadFile(url, filename) {
-  if (urlsNeedReferer.some( urlNeedReferer => url.includes(urlNeedReferer))) { 
+  const ableToDownload = await canFetchVideo(url);
+  if (!ableToDownload) {
     return Promise.resolve({ status: NEED_UI_DOWNLOAD, url });
-  }  
+  }
   return new Promise((resolve, reject) => {
     chrome.downloads.download({ url, filename }, () => {
       if (chrome.runtime.lastError) {
@@ -53,7 +49,7 @@ chrome.webRequest.onBeforeRequest.addListener(
       (link.includes("douyinvod") || link.includes("zjcdn")) &&
       linkList.at(-1) !== link
     ) {
-      if (linkList.length > 50) {
+      if (linkList.length > 100) {
         linkList.shift();
       }
       linkList.push(link);

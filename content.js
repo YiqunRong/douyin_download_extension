@@ -1,10 +1,11 @@
-const loadingdIconLink = chrome.runtime.getURL("assets/images/loading.png");
-const downloadIconLink = chrome.runtime.getURL("assets/images/download.png");
-const failedIconLink = chrome.runtime.getURL("assets/images/failed.png");
 const NEED_UI_DOWNLOAD = "NEED_UI_DOWNLOAD";
 const DOWNLOADED = "DOWNLOADED";
 const LINK_NOT_FOUND = "LINK_NOT_FOUND";
 const DOWNLOAD_FAILED = "DOWNLOAD_FAILED";
+
+const loadingdIconLink = chrome.runtime.getURL("assets/images/loading.png");
+const downloadIconLink = chrome.runtime.getURL("assets/images/download.png");
+const failedIconLink = chrome.runtime.getURL("assets/images/failed.png");
 
 async function fetchVideoAndDownload(url, filename) {
   const response = await fetch(url, {
